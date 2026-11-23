@@ -1,0 +1,18 @@
+
+{
+  "manifest_version": 3,
+  "name": "Universal AI Form Assistant",
+  "version": "1.0.0",
+  "description": "AI-powered assistant for understanding and filling website forms.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_title": "Universal AI Form Assistant"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

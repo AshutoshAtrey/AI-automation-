@@ -1,50 +1,65 @@
 
-function detectFormFields() {
-  const fields = document.querySelectorAll(
-    "input, textarea, select"
-  );
+const scanButton = document.getElementById("scanButton");
+const status = document.getElementById("status");
+const results = document.getElementById("results");
 
-  return Array.from(fields)
-    .filter(field => {
-      const type = (field.type || "").toLowerCase();
+scanButton.addEventListener("click", async () => {
+  status.textContent = "Reading questions...";
+  results.replaceChildren();
 
-      return (
-        field.getClientRects().length > 0 &&
-        !["hidden", "password", "file"].includes(type)
-      );
-    })
-    .map((field, index) => {
-      const parent = field.closest(
-        "label, fieldset, .form-group, .question"
-      ) || field.parentElement;
-
-      return {
-        index,
-        type: field.type || field.tagName.toLowerCase(),
-        name: field.name,
-        label:
-          field.labels?.[0]?.innerText ||
-          field.getAttribute("aria-label") ||
-          "",
-        question: parent?.innerText?.trim().slice(0, 500) || "",
-        placeholder: field.placeholder || "",
-        required: field.required,
-        options: field.tagName === "SELECT"
-          ? Array.from(field.options).map(option => option.text)
-          : []
-      };
+  try {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true
     });
-}
 
-chrome.runtime.onMessage.addListener(
-  (message, sender, sendResponse) => {
-    if (message.action === "SCAN_FORMS") {
-      sendResponse({
-        success: true,
-        fields: detectFormFields()
-      });
+    const response = await chrome.tabs.sendMessage(
+      tab.id,
+      { action: "SCAN_FORMS" }
+    );
+
+    if (!response || !response.success) {
+      throw new Error("Scan failed");
     }
-  }
-);
 
-console.log("Universal AI Form Assistant ready!");
+    const fields = response.fields;
+
+    status.textContent = `Found ${fields.length} fields.`;
+
+    fields.forEach((field) => {
+      const card = document.createElement("div");
+      card.className = "field";
+
+      const question = document.createElement("h4");
+      question.textContent =
+        field.question || field.label || `Question ${field.index + 1}`;
+
+      const type = document.createElement("p");
+      type.textContent = `Type: ${field.type}`;
+
+      card.append(question, type);
+
+      if (field.options && field.options.length) {
+        const optionList = document.createElement("ul");
+
+        field.options.forEach(option => {
+          const li = document.createElement("li");
+          li.textContent = option;
+          optionList.appendChild(li);
+        });
+
+        card.appendChild(optionList);
+      }
+
+      results.appendChild(card);
+    });
+
+    if (fields.length === 0) {
+      results.textContent = "No form fields found.";
+    }
+
+  } catch (error) {
+    status.textContent = "Unable to scan this page.";
+  }
+});
+    

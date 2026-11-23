@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal AI Form Assistant</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 18px;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #172033;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  color: #2563eb;
+  font-size: 25px;
+}
+
+p {
+  line-height: 1.5;
+}
+
+.card {
+  background: white;
+  padding: 17px;
+  border-radius: 14px;
+  margin-top: 16px;
+  box-shadow: 0 3px 12px #00000010;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin: 12px 0 7px;
+}
+
+textarea, input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 9px;
+  margin-top: 12px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.secondary {
+  background: #475569;
+}
+
+#status {
+  margin-top: 12px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>AI Form Assistant</h1>
+<p style="text-align:center">
+Your free questionnaire assistant
+</p>
+
+<div class="card">
+
+<label>Website Question</label>
+<textarea id="question"
+placeholder="Paste the question here..."></textarea>
+
+<label>Available Options</label>
+<textarea id="options"
+placeholder="Paste the answer options here..."></textarea>
+
+<label>Extra information (optional)</label>
+<textarea id="context"
+placeholder="Add information needed to answer accurately..."></textarea>
+
+<button onclick="generatePrompt()">
+Generate AI Prompt
+</button>
+
+<button class="secondary" onclick="copyPrompt()">
+Copy AI Prompt
+</button>
+
+<button class="secondary" onclick="openChatGPT()">
+Open ChatGPT
+</button>
+
+<div id="status">Ready.</div>
+
+</div>
+
+<div class="card">
+<h3>AI Answer</h3>
+<textarea id="answer"
+placeholder="Paste the AI answer here..."></textarea>
+<button onclick="copyAnswer()">Copy Answer</button>
+</div>
+
+</div>
+
+<script>
+let generatedPrompt = "";
+
+function generatePrompt() {
+  const question =
+    document.getElementById("question").value.trim();
+
+  const options =
+    document.getElementById("options").value.trim();
+
+  const context =
+    document.getElementById("context").value.trim();
+
+  if (!question) {
+    document.getElementById("status").textContent =
+      "Please enter a question first.";
+    return;
+  }
+
+  generatedPrompt = `
+You are an AI questionnaire assistant.
+
+Read the question and available options carefully.
+
+Question:
+${question}
+
+Options:
+${options || "No options provided"}
+
+User-provided information:
+${context || "No extra information provided"}
+
+Instructions:
+1. Suggest the most appropriate answer.
+2. Never invent personal information.
+3. If essential information is missing, ask the user.
+4. If options are provided, choose only from those options.
+5. Explain briefly why the answer fits.
+6. Do not submit any form.
+
+Give a clear answer.
+`;
+
+  document.getElementById("status").textContent =
+    "AI prompt generated successfully!";
+}
+
+async function copyPrompt() {
+  if (!generatedPrompt) {
+    generatePrompt();
+  }
+
+  if (!generatedPrompt) return;
+
+  try {
+    await navigator.clipboard.writeText(generatedPrompt);
+    document.getElementById("status").textContent =
+      "Prompt copied! Open ChatGPT and paste it.";
+  } catch (error) {
+    document.getElementById("status").textContent =
+      "Copy unavailable. Try opening this page in a supported browser.";
+  }
+}
+
+function openChatGPT() {
+  window.open("https://chatgpt.com/", "_blank");
+}
+
+async function copyAnswer() {
+  const answer =
+    document.getElementById("answer").value;
+
+  if (!answer.trim()) {
+    document.getElementById("status").textContent =
+      "No answer to copy.";
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(answer);
+    document.getElementById("status").textContent =
+      "Answer copied!";
+  } catch (error) {
+    document.getElementById("status").textContent =
+      "Unable to copy answer.";
+  }
+}
+</script>
+
+</body>
+</html>
+  

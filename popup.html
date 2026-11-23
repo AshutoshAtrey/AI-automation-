@@ -3,8 +3,9 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Form Assistant</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,11 +21,12 @@
     button {
       width: 100%;
       padding: 12px;
+      margin-top: 10px;
       background: #2563eb;
       color: white;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     #status, #results {
@@ -49,7 +51,10 @@
 
   <button id="scanButton">Scan Website</button>
 
+  <button id="copyButton">Copy Questions</button>
+
   <div id="status">Ready to scan.</div>
+
   <div id="results"></div>
 
   <script src="popup.js"></script>

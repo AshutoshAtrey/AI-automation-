@@ -1,6 +1,7 @@
 
 const scanButton = document.getElementById("scanButton");
 const copyButton = document.getElementById("copyButton");
+const openButton = document.getElementById("openButton");
 const status = document.getElementById("status");
 const results = document.getElementById("results");
 
@@ -31,18 +32,15 @@ scanButton.addEventListener("click", async () => {
 
     latestFields = response.fields;
 
-    status.textContent =
-      `Found ${latestFields.length} fields.`;
+    status.textContent = `Found ${latestFields.length} fields.`;
 
-    latestFields.forEach(field => {
+    latestFields.forEach((field, index) => {
       const card = document.createElement("div");
       card.className = "field";
 
       const question = document.createElement("h4");
       question.textContent =
-        field.question ||
-        field.label ||
-        `Question ${field.index + 1}`;
+        field.question || field.label || `Question ${index + 1}`;
 
       const type = document.createElement("p");
       type.textContent = `Type: ${field.type}`;
@@ -76,25 +74,41 @@ scanButton.addEventListener("click", async () => {
 });
 
 copyButton.addEventListener("click", async () => {
-  if (latestFields.length === 0) {
-    status.textContent = "Scan a website first.";
-    return;
-  }
+  if (!latestFields.length) return;
 
-  const text = latestFields.map((field, index) => {
-    return [
-      `Question ${index + 1}:`,
-      field.question || field.label || "Not available",
-      `Type: ${field.type}`,
-      `Options: ${field.options?.join(", ") || "None"}`
-    ].join("\n");
-  }).join("\n\n");
+  const questions = latestFields.map((field, index) => `
+Question ${index + 1}: ${field.question || field.label || "Not available"}
+Type: ${field.type}
+Options: ${field.options?.join(", ") || "None"}
+  `).join("\n");
+
+  const prompt = `
+You are helping me understand and complete a questionnaire.
+
+Please:
+1. Read every question carefully.
+2. Suggest accurate answers based on information I provide.
+3. Do not invent personal information or guess unknown facts.
+4. Ask me when an answer requires information I have not provided.
+5. Explain multiple-choice suggestions briefly.
+
+Return answers in numbered order.
+
+QUESTIONNAIRE:
+${questions}
+`;
 
   try {
-    await navigator.clipboard.writeText(text);
-    status.textContent = "Questions copied successfully!";
+    await navigator.clipboard.writeText(prompt);
+    status.textContent = "AI prompt copied! Open ChatGPT.";
   } catch (error) {
     status.textContent = "Copy failed. Try again.";
   }
 });
-            
+
+openButton.addEventListener("click", async () => {
+  await chrome.tabs.create({
+    url: "https://chatgpt.com/"
+  });
+});
+    

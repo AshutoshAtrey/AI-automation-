@@ -13,17 +13,27 @@ function detectFormFields() {
         !["hidden", "password", "file"].includes(type)
       );
     })
-    .map((field, index) => ({
-      index,
-      type: field.type || field.tagName.toLowerCase(),
-      name: field.name,
-      placeholder: field.placeholder || "",
-      label:
-        field.labels?.[0]?.innerText ||
-        field.getAttribute("aria-label") ||
-        "",
-      required: field.required
-    }));
+    .map((field, index) => {
+      const parent = field.closest(
+        "label, fieldset, .form-group, .question"
+      ) || field.parentElement;
+
+      return {
+        index,
+        type: field.type || field.tagName.toLowerCase(),
+        name: field.name,
+        label:
+          field.labels?.[0]?.innerText ||
+          field.getAttribute("aria-label") ||
+          "",
+        question: parent?.innerText?.trim().slice(0, 500) || "",
+        placeholder: field.placeholder || "",
+        required: field.required,
+        options: field.tagName === "SELECT"
+          ? Array.from(field.options).map(option => option.text)
+          : []
+      };
+    });
 }
 
 chrome.runtime.onMessage.addListener(
